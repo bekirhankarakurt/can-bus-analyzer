@@ -37,12 +37,15 @@ add_library(canbus_core STATIC
   src/live.cpp
   src/source.cpp
   src/socketcan.cpp
+  src/cli.cpp
   # SOURCES
 )
 target_include_directories(canbus_core PUBLIC include PRIVATE src)
 target_link_libraries(canbus_core PUBLIC canbus_options)
 
-# TARGETS
+add_executable(canscan src/main.cpp)
+target_link_libraries(canscan PRIVATE canbus_core)
+
 
 if(CANBUS_BUILD_TESTS)
   enable_testing()
