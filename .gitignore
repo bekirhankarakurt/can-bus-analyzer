@@ -69,3 +69,4 @@ Testing/
 
 # Build trees
 build*/
+!tests/fixtures/*.log
