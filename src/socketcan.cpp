@@ -116,7 +116,7 @@ ReadStatus SocketCan::next(CanFrame& out) {
 
 void SocketCan::send(const CanFrame& frame) {
   canfd_frame raw{};
-  raw.can_id = frame.id | (frame.extended ? CAN_EFF_FLAG : 0u) | (frame.rtr ? CAN_RTR_FLAG : 0u);
+  raw.can_id = frame.id | (frame.extended ? CAN_EFF_FLAG : 0U) | (frame.rtr ? CAN_RTR_FLAG : 0U);
   raw.len = frame.len;
   if (frame.fd) {
     raw.flags = static_cast<__u8>((frame.brs ? CANFD_BRS : 0) | (frame.esi ? CANFD_ESI : 0));

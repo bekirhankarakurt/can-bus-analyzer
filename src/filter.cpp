@@ -1,5 +1,6 @@
 #include "canbus/filter.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 
@@ -34,20 +35,11 @@ void FilterSet::add(const Filter& filter) {
 }
 
 bool FilterSet::accepts(const CanFrame& frame) const noexcept {
-  for (const Filter& f : reject_) {
-    if (f.matches(frame)) {
-      return false;
-    }
+  const auto matches = [&frame](const Filter& f) { return f.matches(frame); };
+  if (std::any_of(reject_.begin(), reject_.end(), matches)) {
+    return false;
   }
-  if (accept_.empty()) {
-    return true;
-  }
-  for (const Filter& f : accept_) {
-    if (f.matches(frame)) {
-      return true;
-    }
-  }
-  return false;
+  return accept_.empty() || std::any_of(accept_.begin(), accept_.end(), matches);
 }
 
 }  // namespace canbus

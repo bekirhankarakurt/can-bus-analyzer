@@ -15,7 +15,7 @@ constexpr char kHexDigits[] = "0123456789ABCDEF";
 
 void append_hex(std::string& out, std::uint32_t value, int digits) {
   for (int i = digits - 1; i >= 0; --i) {
-    out.push_back(kHexDigits[(value >> (4 * i)) & 0xFu]);
+    out.push_back(kHexDigits[(value >> (4 * i)) & 0xFU]);
   }
 }
 
@@ -38,7 +38,7 @@ std::string format_frame(const CanFrame& frame, std::string_view iface) {
   }
   if (frame.fd) {
     out.push_back('#');
-    append_hex(out, (frame.brs ? 1u : 0u) | (frame.esi ? 2u : 0u), 1);
+    append_hex(out, (frame.brs ? 1U : 0U) | (frame.esi ? 2U : 0U), 1);
   }
   for (std::size_t i = 0; i < frame.len; ++i) {
     append_hex(out, frame.data[i], 2);

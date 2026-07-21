@@ -89,7 +89,7 @@ std::optional<double> decode_signal(const Signal& signal, const std::uint8_t* da
   }
   double value = 0.0;
   if (signal.sign == Sign::Signed) {
-    if (signal.length < 64 && ((raw >> (signal.length - 1)) & 1) != 0) {
+    if (signal.length > 0 && signal.length < 64 && ((raw >> (signal.length - 1)) & 1) != 0) {
       raw |= ~std::uint64_t{0} << signal.length;
     }
     value = static_cast<double>(static_cast<std::int64_t>(raw));
@@ -133,7 +133,7 @@ bool encode_signal(const Signal& signal, double physical, std::uint8_t* data, st
   }
   for (unsigned i = 0; i < signal.length; ++i) {
     const std::size_t p = positions[i];
-    const auto mask = static_cast<std::uint8_t>(1u << (p % 8));
+    const auto mask = static_cast<std::uint8_t>(1U << (p % 8));
     if (((raw >> i) & 1) != 0) {
       data[p / 8] = static_cast<std::uint8_t>(data[p / 8] | mask);
     } else {

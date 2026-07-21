@@ -13,12 +13,12 @@
 
 namespace canbus {
 
-enum class ByteOrder { LittleEndian, BigEndian };  // DBC @1 = Intel, @0 = Motorola
-enum class Sign { Unsigned, Signed };
+enum class ByteOrder : std::uint8_t { LittleEndian, BigEndian };  ///< DBC @1 = Intel, @0 = Motorola
+enum class Sign : std::uint8_t { Unsigned, Signed };
 
 struct Signal {
   std::string name;
-  unsigned start_bit = 0;  // LSB for little endian, MSB for big endian (DBC convention)
+  unsigned start_bit = 0;  ///< LSB for little endian, MSB for big endian (DBC convention)
   unsigned length = 1;
   ByteOrder byte_order = ByteOrder::LittleEndian;
   Sign sign = Sign::Unsigned;
@@ -36,7 +36,7 @@ struct Message {
   unsigned dlc = 0;
   std::string sender;
   std::vector<Signal> signals;
-  std::optional<unsigned> cycle_ms;  // from BA_ "GenMsgCycleTime"
+  std::optional<unsigned> cycle_ms;  ///< from BA_ "GenMsgCycleTime"
 };
 
 struct DecodedSignal {
@@ -44,31 +44,31 @@ struct DecodedSignal {
   double value = 0.0;
 };
 
-// Physical value = raw * factor + offset. Returns nullopt if the signal does not
-// fit inside `len` payload bytes.
+/// Physical value = raw * factor + offset. Returns nullopt if the signal does not
+/// fit inside `len` payload bytes.
 [[nodiscard]] std::optional<double> decode_signal(const Signal& signal, const std::uint8_t* data,
                                                   std::size_t len);
 
-// Writes `physical` into the payload (rounded and clamped to the raw range).
-// Returns false, leaving `data` untouched, if the signal does not fit in `len` bytes.
+/// Writes `physical` into the payload (rounded and clamped to the raw range).
+/// Returns false, leaving `data` untouched, if the signal does not fit in `len` bytes.
 [[nodiscard]] bool encode_signal(const Signal& signal, double physical, std::uint8_t* data,
                                  std::size_t len);
 
-// Declared [minimum, maximum] if set, otherwise the range the raw bits can represent.
+/// Declared [minimum, maximum] if set, otherwise the range the raw bits can represent.
 [[nodiscard]] std::pair<double, double> physical_range(const Signal& signal);
 
-// Decodes every signal of `message` that fits in the frame payload.
+/// Decodes every signal of `message` that fits in the frame payload.
 [[nodiscard]] std::vector<DecodedSignal> decode_message(const Message& message,
                                                         const CanFrame& frame);
 
-// "EngineSpeed=1500 rpm"
+/// "EngineSpeed=1500 rpm"
 [[nodiscard]] std::string format_signal(const DecodedSignal& decoded);
 
 class Database {
  public:
-  // Supports BO_, SG_ (both byte orders, signed/unsigned, factor/offset) and
-  // BA_ "GenMsgCycleTime". Multiplexed signals are skipped and counted.
-  // Throws std::runtime_error with a line number on malformed input.
+  /// Supports BO_, SG_ (both byte orders, signed/unsigned, factor/offset) and
+  /// BA_ "GenMsgCycleTime". Multiplexed signals are skipped and counted.
+  /// Throws std::runtime_error with a line number on malformed input.
   [[nodiscard]] static Database parse(std::istream& in);
   [[nodiscard]] static Database load(const std::string& path);
 
