@@ -8,14 +8,14 @@
 
 namespace canbus {
 
-// One identifier filter in candump syntax:
-//   "123"        exact match on 0x123
-//   "123:7F0"    (id & mask) == (0x123 & 0x7F0)
-//   "123~7FF"    inverted: rejects matching frames
-// An identifier with 8 hex digits, or above 0x7FF, selects extended frames.
+/// One identifier filter in candump syntax:
+///   "123"        exact match on 0x123
+///   "123:7F0"    (id & mask) == (0x123 & 0x7F0)
+///   "123~7FF"    inverted: rejects matching frames
+/// An identifier with 8 hex digits, or above 0x7FF, selects extended frames.
 class Filter {
  public:
-  // Throws std::invalid_argument on malformed specs.
+  /// Throws std::invalid_argument on malformed specs.
   [[nodiscard]] static Filter parse(std::string_view spec);
 
   [[nodiscard]] bool matches(const CanFrame& frame) const noexcept;
@@ -28,8 +28,8 @@ class Filter {
   bool inverted_ = false;
 };
 
-// A frame is accepted when it matches at least one positive filter (or none
-// are configured) and matches no inverted filter.
+/// A frame is accepted when it matches at least one positive filter (or none
+/// are configured) and matches no inverted filter.
 class FilterSet {
  public:
   void add(const Filter& filter);
