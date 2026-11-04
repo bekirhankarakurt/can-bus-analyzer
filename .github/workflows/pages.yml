@@ -83,7 +83,7 @@ jobs:
           <li><a href="coverage/index.html">Coverage report</a></li></ul>
           HTML
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
       - id: deployment
