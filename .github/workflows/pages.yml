@@ -49,7 +49,7 @@ jobs:
       - name: Install Doxygen
         run: sudo apt-get update && sudo apt-get install -y doxygen
       - name: Build API docs
-        run: doxygen Doxyfile
+        run: mkdir -p build/doxygen && doxygen Doxyfile
       - uses: actions/upload-artifact@v4
         with:
           name: api-docs
