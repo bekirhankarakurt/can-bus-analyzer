@@ -6,7 +6,7 @@
 
 namespace canbus {
 
-// Owns a file descriptor and closes it on destruction.
+/// Owns a file descriptor and closes it on destruction.
 class FileDescriptor {
  public:
   FileDescriptor() noexcept = default;
@@ -23,14 +23,14 @@ class FileDescriptor {
   int fd_ = -1;
 };
 
-// A raw SocketCAN socket bound to one interface, with CAN FD frames enabled.
-// For CAN FD traffic the interface MTU must be 72 (see scripts/setup_vcan.sh).
+/// A raw SocketCAN socket bound to one interface, with CAN FD frames enabled.
+/// For CAN FD traffic the interface MTU must be 72 (see scripts/setup_vcan.sh).
 class SocketCan final : public FrameSource, public FrameSink {
  public:
-  // Throws std::runtime_error if the interface cannot be opened.
+  /// Throws std::runtime_error if the interface cannot be opened.
   explicit SocketCan(const std::string& iface);
 
-  // Waits up to 100 ms for a frame; error frames are skipped.
+  /// Waits up to 100 ms for a frame; error frames are skipped.
   ReadStatus next(CanFrame& out) override;
   void send(const CanFrame& frame) override;
   [[nodiscard]] std::string name() const override { return iface_; }

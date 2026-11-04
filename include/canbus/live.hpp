@@ -10,9 +10,9 @@
 
 namespace canbus {
 
-// Keeps the latest frame per identifier and renders a refreshable table with the
-// decoded signal values underneath each row. `db` may be null (raw view only) and
-// must outlive the view.
+/// Keeps the latest frame per identifier and renders a refreshable table with the
+/// decoded signal values underneath each row. `db` may be null (raw view only) and
+/// must outlive the view.
 class LiveView {
  public:
   explicit LiveView(const Database* db) noexcept : db_(db) {}
@@ -30,7 +30,7 @@ class LiveView {
   std::map<std::uint64_t, Entry> entries_;
 };
 
-// "11 22 33" (RTR frames have no data).
+/// "11 22 33" (RTR frames have no data).
 [[nodiscard]] std::string format_data(const CanFrame& frame);
 
 }  // namespace canbus
