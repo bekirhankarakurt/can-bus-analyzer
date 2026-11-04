@@ -35,6 +35,8 @@ add_library(canbus_core STATIC
   src/filter.cpp
   src/stats.cpp
   src/live.cpp
+  src/source.cpp
+  src/socketcan.cpp
   # SOURCES
 )
 target_include_directories(canbus_core PUBLIC include PRIVATE src)
