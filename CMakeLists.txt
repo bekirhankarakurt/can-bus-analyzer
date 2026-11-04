@@ -32,6 +32,9 @@ add_library(canbus_core STATIC
   src/frame.cpp
   src/candump.cpp
   src/dbc.cpp
+  src/filter.cpp
+  src/stats.cpp
+  src/live.cpp
   # SOURCES
 )
 target_include_directories(canbus_core PUBLIC include PRIVATE src)
