@@ -82,7 +82,7 @@ jobs:
           <ul><li><a href="api/index.html">API documentation</a></li>
           <li><a href="coverage/index.html">Coverage report</a></li></ul>
           HTML
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
