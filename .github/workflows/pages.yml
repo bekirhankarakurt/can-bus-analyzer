@@ -1,0 +1,90 @@
+name: Docs and coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install gcovr
+        run: pip install gcovr
+      - name: Build with coverage
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0"
+          cmake --build build -j"$(nproc)"
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Report
+        run: |
+          mkdir -p site/coverage site/badges
+          gcovr -r . build --filter 'src/' --exclude 'src/main.cpp' --print-summary \
+            --html-details site/coverage/index.html --json-summary site/coverage/summary.json
+          python3 - <<'PY'
+          import json
+          pct = json.load(open("site/coverage/summary.json"))["line_percent"]
+          color = "brightgreen" if pct >= 90 else "green" if pct >= 80 else "yellow" if pct >= 60 else "red"
+          json.dump({"schemaVersion": 1, "label": "coverage", "message": f"{pct:.0f}%", "color": color},
+                    open("site/badges/coverage.json", "w"))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-site
+          path: site
+
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+      - name: Build API docs
+        run: doxygen Doxyfile
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: build/doxygen/html
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: [coverage, docs]
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: coverage-site
+          path: site
+      - uses: actions/download-artifact@v5
+        with:
+          name: api-docs
+          path: site/api
+      - name: Landing page
+        run: |
+          cat > site/index.html <<'HTML'
+          <!doctype html><meta charset="utf-8"><title>can-bus-analyzer</title>
+          <h1>can-bus-analyzer</h1>
+          <ul><li><a href="api/index.html">API documentation</a></li>
+          <li><a href="coverage/index.html">Coverage report</a></li></ul>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
