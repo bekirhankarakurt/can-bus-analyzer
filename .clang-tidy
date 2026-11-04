@@ -1,0 +1,30 @@
+# Disabled: vararg (ioctl/snprintf are the idiomatic Linux/printf-format tools here),
+# cert-err33-c (std::signal/snprintf results are intentionally ignored), and
+# style checks that only add noise for this code base.
+Checks: >
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-c-arrays,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-function-cognitive-complexity,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cert-err58-cpp,
+  -cert-err33-c,
+  -cppcoreguidelines-pro-type-vararg
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(include/canbus|src)/.*'
+CheckOptions:
+  cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: true

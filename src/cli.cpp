@@ -57,8 +57,8 @@ class UsageError : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 
-enum class Command { Help, Monitor, Record, Stats, Replay, Generate };
-enum class Input { None, Interface, Replay, Generate };
+enum class Command : std::uint8_t { Help, Monitor, Record, Stats, Replay, Generate };
+enum class Input : std::uint8_t { None, Interface, Replay, Generate };
 
 struct Options {
   Command command = Command::Help;
@@ -126,7 +126,8 @@ Options parse_args(const std::vector<std::string>& args) {
     if (arg == "-h" || arg == "--help") {
       o.command = Command::Help;
       return o;
-    } else if (arg == "-i" || arg == "--iface") {
+    }
+    if (arg == "-i" || arg == "--iface") {
       o.iface = value();
     } else if (arg == "--replay") {
       o.replay_file = value();
@@ -176,8 +177,10 @@ Input input_kind(const Options& o) {
   if (chosen != 1) {
     throw UsageError("choose exactly one input: -i IFACE, --replay LOG or --generate DBC");
   }
-  return !o.iface.empty() ? Input::Interface
-                          : (!o.replay_file.empty() ? Input::Replay : Input::Generate);
+  if (!o.iface.empty()) {
+    return Input::Interface;
+  }
+  return o.replay_file.empty() ? Input::Generate : Input::Replay;
 }
 
 void validate(const Options& o) {
@@ -257,7 +260,7 @@ FilterSet build_filters(const Options& o) {
 // Reads frames until the source ends, a limit is reached or `stop` is set.
 template <typename OnFrame>
 void pump(FrameSource& source, const FilterSet& filters, const Options& o,
-          const std::atomic<bool>& stop, OnFrame&& on_frame) {
+          const std::atomic<bool>& stop, const OnFrame& on_frame) {
   const auto wall_start = std::chrono::steady_clock::now();
   std::optional<double> first_timestamp;
   std::uint64_t accepted = 0;
@@ -314,7 +317,7 @@ int run_monitor(const Options& o, Session& session, const FilterSet& filters,
   auto last_draw = std::chrono::steady_clock::now();
   pump(*session.source, filters, o, stop, [&](const CanFrame& frame) {
     if (!o.live) {
-      out << describe(frame, iface, db) << std::endl;
+      out << describe(frame, iface, db) << '\n' << std::flush;
       return;
     }
     stats.add(frame);

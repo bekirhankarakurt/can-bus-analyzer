@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 #include <ostream>
 #include <stdexcept>
 #include <thread>
@@ -17,9 +18,8 @@ constexpr std::chrono::milliseconds kStopPollInterval{20};
 
 LogSource::LogSource(const std::vector<LogLine>& lines, bool loop) : loop_(loop) {
   frames_.reserve(lines.size());
-  for (const LogLine& line : lines) {
-    frames_.push_back(line.frame);
-  }
+  std::transform(lines.begin(), lines.end(), std::back_inserter(frames_),
+                 [](const LogLine& line) { return line.frame; });
   if (!lines.empty()) {
     iface_ = lines.front().iface;
     span_ = std::max(0.0, frames_.back().timestamp - frames_.front().timestamp);
@@ -43,8 +43,8 @@ GeneratorSource::GeneratorSource(const Database& db, double start_time) : start_
   for (const Message& message : db.messages()) {
     Slot slot;
     slot.message = message;
-    const unsigned cycle = message.cycle_ms.value_or(0) > 0 ? *message.cycle_ms : kDefaultCycleMs;
-    slot.period_s = cycle / 1000.0;
+    const unsigned configured = message.cycle_ms.value_or(0);
+    slot.period_s = (configured > 0 ? configured : kDefaultCycleMs) / 1000.0;
     slots_.push_back(std::move(slot));
   }
   if (slots_.empty()) {
@@ -60,7 +60,7 @@ ReadStatus GeneratorSource::next(CanFrame& out) {
   const auto earliest = std::min_element(
       slots_.begin(), slots_.end(),
       [this](const Slot& a, const Slot& b) { return due(a) < due(b); });
-  const std::size_t slot_index = static_cast<std::size_t>(earliest - slots_.begin());
+  const auto slot_index = static_cast<std::size_t>(earliest - slots_.begin());
   const Message& message = earliest->message;
   const double when = due(*earliest);
 
@@ -74,7 +74,7 @@ ReadStatus GeneratorSource::next(CanFrame& out) {
   for (std::size_t i = 0; i < message.signals.size(); ++i) {
     const Signal& signal = message.signals[i];
     const auto [low, high] = physical_range(signal);
-    const double k = static_cast<double>(slot_index + i);
+    const auto k = static_cast<double>(slot_index + i);
     const double wave = std::sin(kTwoPi * (when - start_) / (4.0 + k) + 0.7 * k);
     const double value = (low + high) / 2.0 + (high - low) / 2.0 * wave;
     (void)encode_signal(signal, value, out.data.data(), out.len);
@@ -85,7 +85,7 @@ ReadStatus GeneratorSource::next(CanFrame& out) {
 
 PacedSource::PacedSource(std::unique_ptr<FrameSource> inner, double speed,
                          const std::atomic<bool>& stop)
-    : inner_(std::move(inner)), speed_(speed), stop_(stop) {
+    : inner_(std::move(inner)), speed_(speed), stop_(&stop) {
   if (!(speed > 0.0)) {
     throw std::invalid_argument("speed must be greater than zero");
   }
@@ -105,7 +105,7 @@ ReadStatus PacedSource::next(CanFrame& out) {
   const auto offset = std::chrono::duration<double>((out.timestamp - first_timestamp_) / speed_);
   const auto deadline = wall_start_ + std::chrono::duration_cast<std::chrono::steady_clock::duration>(offset);
   for (;;) {
-    if (stop_.load()) {
+    if (stop_->load()) {
       return ReadStatus::End;
     }
     const auto now = std::chrono::steady_clock::now();
@@ -118,7 +118,7 @@ ReadStatus PacedSource::next(CanFrame& out) {
 }
 
 void StreamSink::send(const CanFrame& frame) {
-  out_ << format_frame(frame, iface_) << std::endl;
+  *out_ << format_frame(frame, iface_) << '\n' << std::flush;
 }
 
 }  // namespace canbus

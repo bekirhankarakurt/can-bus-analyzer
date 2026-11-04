@@ -10,7 +10,7 @@ namespace {
 
 std::atomic<bool> g_stop{false};
 
-void on_signal(int) { g_stop.store(true); }
+void on_signal(int /*signal_number*/) { g_stop.store(true); }
 
 }  // namespace
 
