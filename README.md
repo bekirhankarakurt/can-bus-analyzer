@@ -3,9 +3,16 @@
 Linux SocketCAN analyzer and simulator in C++17: capture, DBC decoding, bus-load statistics, record/replay and DBC-driven traffic generation. No hardware needed to build, test or try it.
 
 [![CI](https://github.com/bekirhankarakurt/can-bus-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/bekirhankarakurt/can-bus-analyzer/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/bekirhankarakurt/can-bus-analyzer/actions/workflows/codeql.yml/badge.svg)](https://github.com/bekirhankarakurt/can-bus-analyzer/actions/workflows/codeql.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fbekirhankarakurt.github.io%2Fcan-bus-analyzer%2Fbadges%2Fcoverage.json)](https://bekirhankarakurt.github.io/can-bus-analyzer/coverage/)
+[![Release](https://img.shields.io/github/v/release/bekirhankarakurt/can-bus-analyzer)](https://github.com/bekirhankarakurt/can-bus-analyzer/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C.svg)](https://en.cppreference.com/w/cpp/17)
 [![Platform: Linux](https://img.shields.io/badge/platform-Linux%20(SocketCAN)-lightgrey.svg)](https://docs.kernel.org/networking/can.html)
+
+![canscan demo](docs/demo.gif)
+
+**Documentation:** [API reference and coverage report](https://bekirhankarakurt.github.io/can-bus-analyzer/)
 
 ## Why / what
 
@@ -65,6 +72,8 @@ ID        Count  Period [ms]
 ```
 
 ## Quick start (60 seconds, no hardware)
+
+Prebuilt `linux-x86_64` and `linux-aarch64` binaries are on the [Releases page](https://github.com/bekirhankarakurt/can-bus-analyzer/releases/latest); or build from source:
 
 ```bash
 git clone https://github.com/bekirhankarakurt/can-bus-analyzer.git && cd can-bus-analyzer
@@ -207,7 +216,7 @@ ctest --test-dir build --output-on-failure              # all suites
 cmake -S . -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCANBUS_SANITIZE=ON && cmake --build build-asan -j && ctest --test-dir build-asan
 ```
 
-A dependency-free harness (`tests/test_framework.hpp`) drives 7 CTest suites against fixture files in `tests/fixtures/` (`sample.dbc`, `sample.log`): bit-exact signal decoding for both byte orders, encode/decode round trips, log round trip byte-for-byte, filters, load maths, generator determinism and cycle times, pacing and stop handling, and end-to-end CLI runs including error codes. CI runs GCC, Clang and a GCC ASan/UBSan job on every push.
+A dependency-free harness (`tests/test_framework.hpp`) drives 7 CTest suites against fixture files in `tests/fixtures/` (`sample.dbc`, `sample.log`): bit-exact signal decoding for both byte orders, encode/decode round trips, log round trip byte-for-byte, filters, load maths, generator determinism and cycle times, pacing and stop handling, and end-to-end CLI runs including error codes. CI runs GCC, Clang, a GCC ASan/UBSan job, cppcheck + clang-tidy, CodeQL and line coverage (published to the [documentation site](https://bekirhankarakurt.github.io/can-bus-analyzer/coverage/)) on every push.
 
 ## Troubleshooting / FAQ
 
@@ -239,7 +248,13 @@ A dependency-free harness (`tests/test_framework.hpp`) drives 7 CTest suites aga
 ├── src/                        # implementations + main.cpp
 ├── tests/                      # harness, suites, fixtures/{sample.dbc,sample.log}
 ├── scripts/setup_vcan.sh       # create/remove a virtual CAN interface
-└── .github/workflows/ci.yml    # GCC, Clang, ASan/UBSan
+├── docs/                       # demo.gif and the scripts that record it
+├── Doxyfile                    # API documentation
+├── .clang-tidy                 # static analysis configuration
+├── CHANGELOG.md  CONTRIBUTING.md  SECURITY.md
+└── .github/
+    ├── workflows/              # ci, codeql, pages (docs + coverage), release
+    ├── ISSUE_TEMPLATE/  PULL_REQUEST_TEMPLATE.md  dependabot.yml
 ```
 
 ## Roadmap
